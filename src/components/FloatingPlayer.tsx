@@ -27,8 +27,12 @@ export const FloatingPlayer: React.FC<Props> = ({
   onSeek,
 }) => {
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-full max-w-2xl px-4 pointer-events-none">
-      <div className="pointer-events-auto flex items-center justify-between gap-3 px-5 py-3 bg-white/85 backdrop-blur-2xl border border-black/[0.08] rounded-full shadow-[0_12px_36px_-6px_rgba(0,0,0,0.15)] ring-1 ring-black/[0.05] transition-all">
+    <div className="fixed bottom-3 left-1/2 -translate-x-1/2 z-50 w-full max-w-2xl px-4 pointer-events-none group">
+      {/* Visual pill handle indicator when collapsed */}
+      <div className="mx-auto w-16 h-1.5 bg-black/20 rounded-full mb-1 opacity-70 group-hover:opacity-0 transition-opacity duration-200 pointer-events-none" />
+
+      {/* Floating Player pill with subtle hover reveal */}
+      <div className="pointer-events-auto flex items-center justify-between gap-3 px-5 py-2.5 bg-white/90 backdrop-blur-2xl border border-black/[0.08] rounded-full shadow-[0_12px_36px_-6px_rgba(0,0,0,0.15)] ring-1 ring-black/[0.05] transition-all duration-300 opacity-40 hover:opacity-100 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0">
         {/* Controls */}
         <div className="flex items-center gap-1.5">
           <button

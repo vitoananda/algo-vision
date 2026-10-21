@@ -1187,4 +1187,214 @@ export const PROBLEMS: Problem[] = [
       return steps;
     },
   },
+
+  // 9. Median of Two Sorted Arrays (Hard)
+  {
+    id: 'median-of-two-sorted-arrays',
+    title: 'Median of Two Sorted Arrays',
+    difficulty: 'Hard',
+    category: 'Binary Search / Partitioning',
+    companyTags: ['Google', 'Amazon', 'Microsoft', 'Apple', 'Meta', 'Uber'],
+    summary: 'Find the median of two sorted arrays in logarithmic O(log(min(m, n))) time.',
+    problemStatement:
+      'Given two sorted arrays nums1 and nums2 of size m and n respectively, return the median of the two sorted arrays. The overall run time complexity should be O(log (m+n)).',
+    defaultInput: {
+      nums1: [1, 3, 8],
+      nums2: [7, 9, 10, 11],
+    },
+    inputSchema: [
+      { name: 'nums1', label: 'First Sorted Array (nums1)', type: 'array', defaultValue: [1, 3, 8] },
+      { name: 'nums2', label: 'Second Sorted Array (nums2)', type: 'array', defaultValue: [7, 9, 10, 11] },
+    ],
+    timeComplexity: 'O(log(min(m, n)))',
+    spaceComplexity: 'O(1)',
+    algorithmBreakdown: [
+      {
+        phase: '1. Binary Search on Shorter Array',
+        description: 'Binary search cut i in nums1 (low = 0, high = m). This guarantees O(log(min(m, n))) performance.',
+      },
+      {
+        phase: '2. Complementary Cut j',
+        description: 'Derive j = floor((m + n + 1) / 2) - i. Together, left partitions of both arrays contain half the elements.',
+      },
+      {
+        phase: '3. Partition Balance & Median',
+        description: 'If leftA <= rightB and leftB <= rightA, the cut is perfect! If total count is odd: max(leftA, leftB). If even: average of max(left) and min(right).',
+      },
+    ],
+    code: `var findMedianSortedArrays = function(nums1, nums2) {
+  if (nums1.length > nums2.length) {
+    return findMedianSortedArrays(nums2, nums1);
+  }
+
+  const m = nums1.length;
+  const n = nums2.length;
+  let low = 0;
+  let high = m;
+
+  while (low <= high) {
+    const i = Math.floor((low + high) / 2);
+    const j = Math.floor((m + n + 1) / 2) - i;
+
+    const leftA = i === 0 ? -Infinity : nums1[i - 1];
+    const rightA = i === m ? Infinity : nums1[i];
+
+    const leftB = j === 0 ? -Infinity : nums2[j - 1];
+    const rightB = j === n ? Infinity : nums2[j];
+
+    if (leftA <= rightB && leftB <= rightA) {
+      if ((m + n) % 2 === 0) {
+        return (Math.max(leftA, leftB) + Math.min(rightA, rightB)) / 2;
+      }
+      return Math.max(leftA, leftB);
+    }
+
+    if (leftA > rightB) {
+      high = i - 1;
+    } else {
+      low = i + 1;
+    }
+  }
+};`,
+    runTracer: (inputs) => {
+      let nums1: number[] = Array.isArray(inputs.nums1) ? inputs.nums1 : [1, 3, 8];
+      let nums2: number[] = Array.isArray(inputs.nums2) ? inputs.nums2 : [7, 9, 10, 11];
+      const steps: ExecutionStep[] = [];
+
+      // Step 1: Check length
+      steps.push({
+        stepNumber: steps.length + 1,
+        lineNumber: 2,
+        plainEnglish: `Check lengths: nums1 has length ${nums1.length}, nums2 has length ${nums2.length}.`,
+        whyThisStep:
+          'We must ensure nums1 is the shorter array so binary search runs in O(log(min(m, n))) and j never goes negative.',
+        invariantOrRule: nums1.length <= nums2.length ? 'nums1 is shorter or equal. Ready to proceed.' : 'nums1 is longer. Swapping arrays.',
+        variables: { len1: nums1.length, len2: nums2.length },
+        visualState: {
+          type: 'two-pointers',
+          array: [...nums1],
+          customMessage: `nums1: [${nums1.join(', ')}] | nums2: [${nums2.join(', ')}]`,
+        },
+      });
+
+      if (nums1.length > nums2.length) {
+        const temp = nums1;
+        nums1 = nums2;
+        nums2 = temp;
+      }
+
+      const m = nums1.length;
+      const n = nums2.length;
+      let low = 0;
+      let high = m;
+
+      steps.push({
+        stepNumber: steps.length + 1,
+        lineNumber: 8,
+        plainEnglish: `Initialize binary search boundaries on shorter array nums1: low = 0, high = ${m}. Combined total size is ${m + n}.`,
+        whyThisStep: 'We search for the exact partition line i in nums1 that balances with partition line j in nums2.',
+        variables: { low, high, m, n, total: m + n },
+        visualState: {
+          type: 'two-pointers',
+          array: [...nums1],
+          pointers: { low, high },
+          customMessage: `Binary search space in nums1: [${low} .. ${high}]`,
+        },
+      });
+
+      while (low <= high) {
+        const i = Math.floor((low + high) / 2);
+        const j = Math.floor((m + n + 1) / 2) - i;
+
+        const leftA = i === 0 ? -Infinity : nums1[i - 1];
+        const rightA = i === m ? Infinity : nums1[i];
+
+        const leftB = j === 0 ? -Infinity : nums2[j - 1];
+        const rightB = j === n ? Infinity : nums2[j];
+
+        steps.push({
+          stepNumber: steps.length + 1,
+          lineNumber: 13,
+          plainEnglish: `Cut partition: i = ${i} in nums1, j = ${j} in nums2. Left boundary values are leftA = ${leftA}, leftB = ${leftB}. Right values are rightA = ${rightA}, rightB = ${rightB}.`,
+          whyThisStep:
+            'i + j = half of total items. We must check if max(leftA, leftB) <= min(rightA, rightB).',
+          invariantOrRule: `Left partition contains ${i + j} elements across both arrays.`,
+          variables: { i, j, leftA: leftA === -Infinity ? '-∞' : leftA, rightA: rightA === Infinity ? '+∞' : rightA, leftB: leftB === -Infinity ? '-∞' : leftB, rightB: rightB === Infinity ? '+∞' : rightB },
+          visualState: {
+            type: 'two-pointers',
+            array: [...nums1],
+            pointers: { cutA: i },
+            highlights: { ...(i > 0 ? { [i - 1]: 'primary' } : {}), ...(i < m ? { [i]: 'secondary' } : {}) },
+            customMessage: `nums1 cut at ${i} (left: ${leftA}, right: ${rightA}) | nums2 cut at ${j} (left: ${leftB}, right: ${rightB})`,
+          },
+        });
+
+        if (leftA <= rightB && leftB <= rightA) {
+          const isEven = (m + n) % 2 === 0;
+          const median = isEven
+            ? (Math.max(leftA, leftB) + Math.min(rightA, rightB)) / 2
+            : Math.max(leftA, leftB);
+
+          steps.push({
+            stepNumber: steps.length + 1,
+            lineNumber: 22,
+            plainEnglish: `PERFECT PARTITION FOUND! leftA (${leftA}) <= rightB (${rightB}) and leftB (${leftB}) <= rightA (${rightA}). Total length (${m + n}) is ${isEven ? 'EVEN' : 'ODD'}. Median = ${median}.`,
+            whyThisStep:
+              isEven
+                ? `Even total elements: average the max of left half (${Math.max(leftA, leftB)}) and min of right half (${Math.min(rightA, rightB)}).`
+                : `Odd total elements: median is the maximum element in the left half: ${median}.`,
+            invariantOrRule: `Valid median partition solved in O(log(min(m, n))) time!`,
+            variables: { median, isEven, totalElements: m + n },
+            visualState: {
+              type: 'two-pointers',
+              array: [...nums1],
+              pointers: { medianIndex: i },
+              returnValue: median,
+              customMessage: `Result: Median is ${median}`,
+            },
+          });
+
+          return steps;
+        }
+
+        if (leftA > rightB) {
+          const oldHigh = high;
+          high = i - 1;
+          steps.push({
+            stepNumber: steps.length + 1,
+            lineNumber: 30,
+            plainEnglish: `leftA (${leftA}) is greater than rightB (${rightB}). Cut i in nums1 is too far right! Shift high from ${oldHigh} to ${high}.`,
+            whyThisStep:
+              'We picked too many big elements from nums1. Move binary search window LEFT in nums1.',
+            variables: { low, high, i },
+            visualState: {
+              type: 'two-pointers',
+              array: [...nums1],
+              pointers: { low, high },
+              customMessage: `Cut i was too large. Shifting high to ${high}.`,
+            },
+          });
+        } else {
+          const oldLow = low;
+          low = i + 1;
+          steps.push({
+            stepNumber: steps.length + 1,
+            lineNumber: 32,
+            plainEnglish: `leftB (${leftB}) is greater than rightA (${rightA}). Cut i in nums1 is too far left! Shift low from ${oldLow} to ${low}.`,
+            whyThisStep:
+              'We picked too few elements from nums1. Move binary search window RIGHT in nums1.',
+            variables: { low, high, i },
+            visualState: {
+              type: 'two-pointers',
+              array: [...nums1],
+              pointers: { low, high },
+              customMessage: `Cut i was too small. Shifting low to ${low}.`,
+            },
+          });
+        }
+      }
+
+      return steps;
+    },
+  },
 ];

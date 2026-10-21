@@ -8,6 +8,7 @@ import { FloatingPlayer } from './components/FloatingPlayer';
 import { CustomInputModal } from './components/CustomInputModal';
 import { CustomCodeModal } from './components/CustomCodeModal';
 import { traceCustomJavaScript } from './lib/customTracer';
+import { analyzeCustomAlgorithm } from './lib/codeAnalyzer';
 import type { Problem, ExecutionStep } from './types/algo';
 import { 
   Layers, 
@@ -62,24 +63,24 @@ export function App() {
   };
 
   const handleLoadCustomCode = (title: string, userCode: string, inputArgs: string) => {
+    const analysis = analyzeCustomAlgorithm(title, userCode);
+
     const custom: Problem = {
       id: 'custom',
-      title,
-      difficulty: 'Medium',
-      category: 'Custom Algorithm',
-      companyTags: ['Your Code'],
-      summary: 'User-provided custom algorithm',
-      problemStatement: `Visualizing and translating custom code: ${title}`,
+      title: analysis.title,
+      difficulty: analysis.difficulty,
+      category: analysis.category,
+      companyTags: ['Custom Algorithm', analysis.category],
+      summary: analysis.summary,
+      problemStatement: analysis.summary,
       defaultInput: { args: inputArgs },
       inputSchema: [],
       code: userCode,
-      timeComplexity: 'N/A',
-      spaceComplexity: 'N/A',
-      algorithmBreakdown: [
-        { phase: 'Custom Script', description: 'Simulating line-by-line execution and state evolution.' },
-      ],
-      runTracer: (inp) => {
-        return traceCustomJavaScript(userCode, inp?.args || inputArgs);
+      timeComplexity: analysis.timeComplexity,
+      spaceComplexity: analysis.spaceComplexity,
+      algorithmBreakdown: analysis.breakdown,
+      runTracer: (_inp) => {
+        return traceCustomJavaScript(userCode, inputArgs);
       },
     };
 
@@ -88,6 +89,7 @@ export function App() {
     setInputs({ args: inputArgs });
     setCurrentStepIndex(0);
     setIsPlaying(false);
+    setShowInfoBanner(true);
   };
 
   // Step controls
@@ -249,16 +251,52 @@ export function App() {
         </div>
       )}
 
-      {/* Optional Info Banner */}
+      {/* Enhanced Rich Info Banner */}
       {showInfoBanner && (
-        <div className="bg-white/80 border-b border-black/[0.06] px-6 py-3 text-xs text-[#424245] animate-in fade-in duration-150">
-          <div className="max-w-7xl mx-auto flex items-center justify-between">
-            <p className="m-0 leading-relaxed font-medium">
-              <span className="font-semibold text-[#1d1d1f]">{problem.title}:</span> {problem.problemStatement}
+        <div className="bg-white/90 backdrop-blur-xl border-b border-black/[0.06] px-6 py-4 text-xs text-[#424245] animate-in fade-in duration-150 shadow-sm">
+          <div className="max-w-7xl mx-auto flex flex-col gap-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-sm text-[#1d1d1f]">{problem.title}</span>
+                <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-black/[0.04] text-[#6e6e73]">
+                  {problem.category}
+                </span>
+                <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-blue-50 text-[#0071e3] border border-blue-200/50">
+                  {problem.difficulty}
+                </span>
+              </div>
+              <div className="flex items-center gap-3 font-mono text-[11px] text-[#6e6e73]">
+                <span className="bg-black/[0.03] px-2.5 py-1 rounded-full border border-black/[0.04]">
+                  Time: <strong className="text-[#0071e3] font-semibold">{problem.timeComplexity}</strong>
+                </span>
+                <span className="bg-black/[0.03] px-2.5 py-1 rounded-full border border-black/[0.04]">
+                  Space: <strong className="text-[#af52de] font-semibold">{problem.spaceComplexity}</strong>
+                </span>
+              </div>
+            </div>
+
+            <p className="m-0 leading-relaxed text-[#424245] text-xs sm:text-[13px]">
+              {problem.problemStatement}
             </p>
-            <span className="text-[#86868b] shrink-0 ml-4 font-mono">
-              Time: {problem.timeComplexity} | Space: {problem.spaceComplexity}
-            </span>
+
+            {/* Strategy breakdown phases */}
+            {problem.algorithmBreakdown && problem.algorithmBreakdown.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 pt-2 border-t border-black/[0.05]">
+                {problem.algorithmBreakdown.map((item) => (
+                  <div
+                    key={item.phase}
+                    className="p-2.5 bg-black/[0.02] border border-black/[0.04] rounded-xl text-left"
+                  >
+                    <div className="font-semibold text-[11px] text-[#0071e3] mb-0.5">
+                      {item.phase}
+                    </div>
+                    <div className="text-[11px] text-[#6e6e73] leading-relaxed">
+                      {item.description}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}

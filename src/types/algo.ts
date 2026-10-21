@@ -3,6 +3,7 @@ export type DataStructureType = 'array' | 'two-pointers' | 'sliding-window' | 's
 export interface VisualState {
   type: DataStructureType;
   array?: (number | string)[];
+  multiArray?: { label: string; items: (number | string)[]; pointers?: { [name: string]: number } }[];
   highlights?: { [index: number]: 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'dimmed' };
   pointers?: { [name: string]: number };
   stack?: (number | string)[];

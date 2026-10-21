@@ -59,7 +59,53 @@ export const DataStructureVisualizer: React.FC<Props> = ({ visualState }) => {
 
       {/* Main interactive canvas */}
       <div className="flex-1 flex flex-col justify-center items-center overflow-x-auto py-4">
-        {array && array.length > 0 && (
+        {/* Multi-Array Display (e.g. nums1 and nums2) */}
+        {visualState.multiArray && visualState.multiArray.length > 0 && (
+          <div className="flex flex-col gap-4 items-center w-full">
+            {visualState.multiArray.map((mArr, aIdx) => (
+              <div key={aIdx} className="flex flex-col items-center">
+                <div className="text-[11px] font-semibold text-[#86868b] mb-1 font-mono">
+                  {mArr.label} (length: {mArr.items.length})
+                </div>
+                {/* Pointers row */}
+                <div className="flex gap-2 mb-1.5 min-h-[22px]">
+                  {mArr.items.map((_, idx) => {
+                    const activePointers = mArr.pointers
+                      ? Object.entries(mArr.pointers).filter(([_, ptrIdx]) => ptrIdx === idx)
+                      : [];
+                    return (
+                      <div key={idx} className="w-11 flex flex-col items-center justify-end">
+                        {activePointers.map(([name]) => (
+                          <span
+                            key={name}
+                            className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-[#0071e3] text-white shadow-sm"
+                          >
+                            {name}↓
+                          </span>
+                        ))}
+                      </div>
+                    );
+                  })}
+                </div>
+                {/* Array row */}
+                <div className="flex gap-2 p-2 bg-black/[0.02] border border-black/[0.04] rounded-2xl">
+                  {mArr.items.map((val, idx) => (
+                    <div
+                      key={idx}
+                      className="w-11 h-11 rounded-xl bg-white border border-black/[0.08] shadow-sm flex flex-col items-center justify-center font-mono font-semibold text-sm relative"
+                    >
+                      <span>{val}</span>
+                      <span className="text-[8px] text-[#86868b] absolute bottom-0.5">{idx}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Single Array Display */}
+        {(!visualState.multiArray || visualState.multiArray.length === 0) && array && array.length > 0 && (
           <div className="flex flex-col items-center">
             {/* Pointer labels */}
             <div className="flex gap-2.5 mb-2 relative">
